@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.idea/AndroidProjectSystem.xml
+.idea/indexLayout.xml
+.idea/vcs.xml
+.idea/.gitignore
