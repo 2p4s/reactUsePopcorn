@@ -56,13 +56,23 @@ const KEY = "7142b64b";
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const query = "terminator";
 
   //doesnt return anything, but pass a function to run as a side effect
   //runs it after first mount
   useEffect(function () {
-    fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=city`)
-      .then((res) => res.json())
-      .then((data) => setMovies(data.Search));
+    async function fetchMovies() {
+      setIsLoading(true);
+      const res = await fetch(
+        `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+      );
+      const data = await res.json();
+      setMovies(data.Search);
+      // console.log(data.Search);
+      setIsLoading(false);
+    }
+    fetchMovies();
   }, []); //empty array means run "onMount" ie. first run
 
   return (
@@ -73,9 +83,7 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <Box>
-          <MovieList movies={movies} />
-        </Box>
+        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMoviesList watched={watched} />
@@ -85,13 +93,17 @@ export default function App() {
   );
 }
 
+function Loader() {
+  return <p className="loader">Loading...</p>;
+}
+
 function NavBar({ children }) {
   return <nav className="nav-bar">{children}</nav>;
 }
 function NumResults({ movies }) {
   return (
     <p className="num-results">
-      Found <strong>{movies.length - 1}</strong> results
+      Found <strong>{movies ? movies.length - 1 : 0}</strong> results
     </p>
   );
 }
