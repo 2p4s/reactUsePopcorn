@@ -57,20 +57,34 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const query = "terminator";
 
   //doesnt return anything, but pass a function to run as a side effect
   //runs it after first mount
   useEffect(function () {
     async function fetchMovies() {
-      setIsLoading(true);
-      const res = await fetch(
-        `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-      );
-      const data = await res.json();
-      setMovies(data.Search);
-      // console.log(data.Search);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+        );
+
+        //check for error
+        if (!res.ok) throw new Error("Unable to get movies");
+
+        const data = await res.json();
+        if (data.Response === "False") throw new Error("Movie not found");
+
+        setMovies(data.Search);
+        // console.log(data.Search);
+        setIsLoading(false);
+      } catch (err) {
+        console.error(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
     fetchMovies();
   }, []); //empty array means run "onMount" ie. first run
@@ -83,7 +97,12 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
+        <Box>
+          {/* {isLoading ? <Loader /> : <MovieList movies={movies} />} */}
+          {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />}
+        </Box>
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMoviesList watched={watched} />
@@ -97,6 +116,13 @@ function Loader() {
   return <p className="loader">Loading...</p>;
 }
 
+function ErrorMessage({ message }) {
+  return (
+    <p className="error">
+      <span>⛔</span> {message}
+    </p>
+  );
+}
 function NavBar({ children }) {
   return <nav className="nav-bar">{children}</nav>;
 }
