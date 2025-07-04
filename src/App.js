@@ -54,46 +54,56 @@ const average = (arr) =>
 const KEY = "7142b64b";
 
 export default function App() {
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const query = "terminator";
+  const tempQuery = "terminator";
 
   //doesnt return anything, but pass a function to run as a side effect
   //runs it after first mount
-  useEffect(function () {
-    async function fetchMovies() {
-      try {
-        setIsLoading(true);
-        const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-        );
+  useEffect(
+    function () {
+      async function fetchMovies() {
+        try {
+          setIsLoading(true);
+          //clear any errors
+          setError("");
+          const res = await fetch(
+            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+          );
 
-        //check for error
-        if (!res.ok) throw new Error("Unable to get movies");
+          //check for error
+          if (!res.ok) throw new Error("Unable to get movies");
 
-        const data = await res.json();
-        if (data.Response === "False") throw new Error("Movie not found");
+          const data = await res.json();
+          if (data.Response === "False") throw new Error("Movie not found");
 
-        setMovies(data.Search);
-        // console.log(data.Search);
-        setIsLoading(false);
-      } catch (err) {
-        console.error(err.message);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+          setMovies(data.Search);
+          // console.log(data.Search);
+          setIsLoading(false);
+        } catch (err) {
+          console.error(err.message);
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
       }
-    }
-    fetchMovies();
-  }, []); //empty array means run "onMount" ie. first run
+      if (query.length < 3) {
+        setMovies([]);
+        setError("");
+      }
+      fetchMovies();
+    },
+    [query]
+  ); //empty array means run "onMount" ie. first run, but setting to query, it will refresh on each change of that state
 
   return (
     <>
       <NavBar>
         <Logo />
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
@@ -142,9 +152,7 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
-
+function Search({ query, setQuery }) {
   return (
     <input
       className="search"
