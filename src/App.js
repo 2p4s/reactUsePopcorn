@@ -349,6 +349,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onCloseMovie();
   }
 
+  //load the data
   useEffect(
     function () {
       async function getmovieDetails() {
@@ -367,6 +368,20 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     [selectedId] //set dependency to monitor when it changes, then re-load
   ); //currently only running when the component mounts []!
 
+  //change page title
+  useEffect(
+    function () {
+      if (!title) return;
+      document.title = `Movie | ${title}`;
+      //cleanup function to run on unmount
+      return function () {
+        document.title = "usePopcorn";
+      };
+    },
+    [title] // use the variable change as a dependency
+    //need to be aware that a clean up could be necessary otherwise it could enter a race condition
+    //when the component is unmounted
+  );
   return (
     <div className="details">
       {isLoading ? (
