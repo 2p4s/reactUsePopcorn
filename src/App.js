@@ -296,8 +296,20 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   } = movie;
 
   //set the initial state and this is used on mount so this does not fire
-  const [isTop, setIsTop] = useState(imdbRating > 8);
+  // const [isTop, setIsTop] = useState(imdbRating > 8);
+  // console.log(isTop);
+  // //fix this with useEffect
+  // useEffect(
+  //   function () {
+  //     setIsTop(imdbRating > 8);
+  //   },
+  //   [imdbRating]
+  // );
+  //should use derived state as this updates all the time
+  const isTop = imdbRating > 8;
   console.log(isTop);
+
+  const [avgRating, setAvgRating] = useState(0);
 
   //cannot change the number or order of hooks returned
   /*eslint-disable*/
@@ -318,6 +330,10 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       userRating,
     };
     onAddWatched(newWatchedMovie);
+    // setAvgRating(Number(imdbRating));
+    // //use a callback function otherwise it wont get the latest value, avgRating can be called anything as its a param
+    // setAvgRating((avgRating) => avgRating + userRating / 2);
+
     onCloseMovie();
   }
 
@@ -399,6 +415,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
               </p>
             </div>
           </header>
+          <p>{avgRating}</p>
           <section>
             <div className="rating">
               {!isWatched ? (
