@@ -81,6 +81,16 @@ export default function App() {
     //get the movie array and filter the one to delete
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
+
+  useEffect(function () {
+    document.addEventListener("keydown", function (e) {
+      if (e.code === "Escape") {
+        handleCloseMovie();
+        console.log("Closing");
+      }
+    });
+  }, []);
+
   //doesnt return anything, but pass a function to run as a side effect
   //runs it after first mount
   useEffect(
