@@ -56,7 +56,7 @@ const average = (arr) =>
 const KEY = "7142b64b";
 
 export default function App() {
-  const [query, setQuery] = useState("terminator");
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -81,15 +81,6 @@ export default function App() {
     //get the movie array and filter the one to delete
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
-
-  useEffect(function () {
-    document.addEventListener("keydown", function (e) {
-      if (e.code === "Escape") {
-        handleCloseMovie();
-        console.log("Closing");
-      }
-    });
-  }, []);
 
   //doesnt return anything, but pass a function to run as a side effect
   //runs it after first mount
@@ -116,7 +107,6 @@ export default function App() {
           setMovies(data.Search);
           // console.log(data.Search);
           setError(""); //clears the aborted fetch requests
-          setIsLoading(false);
         } catch (err) {
           console.error(err.message);
           setError(err.message);
@@ -127,7 +117,11 @@ export default function App() {
       if (query.length < 3) {
         setMovies([]);
         setError("");
+        return; //clear the array and do nothing
       }
+      //close any old movie open
+      handleCloseMovie();
+      //now get movies
       fetchMovies();
       //Cleanup function, runs when component is unloaded / removed, prevent multiple runs of this func
       return function () {
@@ -350,7 +344,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   } = movie;
 
   //will be null on first run
-  console.log(title, year);
+  //console.log(title, year);
 
   //handler needs to do a lot so add another handler here
   function handleAdd() {
@@ -366,6 +360,28 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onAddWatched(newWatchedMovie);
     onCloseMovie();
   }
+
+  //only listen on this component
+  useEffect(
+    function () {
+      //define the add as a function as we need to remove THIS SPECIFIC instance
+      //when the component is unloaded
+      function callback(e) {
+        if (e.code === "Escape") {
+          onCloseMovie();
+          //console.log("Closing");
+        }
+      }
+      //add this function instance
+      document.addEventListener("keydown", callback);
+
+      //define the cleanup
+      return function () {
+        document.removeEventListener("keydown", callback);
+      };
+    },
+    [onCloseMovie] //reference the function as a dependency
+  );
 
   //load the data
   useEffect(
