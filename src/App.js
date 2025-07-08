@@ -1,4 +1,3 @@
-import { getMouseEventOptions } from "@testing-library/user-event/dist/utils";
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
 
@@ -11,10 +10,17 @@ const KEY = "7142b64b";
 export default function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  //pass in a callback function to init state of func call, but cannot pass args
+  //only used on init run
+  const [watched, setWatched] = useState(function () {
+    const storedValue = JSON.parse(localStorage.getItem("watched")) || [];
+    //localstorage is a string, so JSON it
+    return storedValue;
+  });
+  //const [watched, setWatched] = useState([]);
 
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
@@ -27,12 +33,26 @@ export default function App() {
   function handleAddWatched(movie) {
     //set watched array to current, plus a new one
     setWatched((watched) => [...watched, movie]);
+
+    //need to build array as its async
+    //convert to string as localStorage takes string
+    //moved to effect
+    //localStorage.setItem("watched", JSON.stringify([...watched, movie]));
   }
 
   function handleDeleteWatched(id) {
     //get the movie array and filter the one to delete
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
+
+  //use an effect so we can update the dependency to the watched state
+  //pass in watched as the async process should already have handled data
+  useEffect(
+    function () {
+      localStorage.setItem("watched", JSON.stringify(watched));
+    },
+    [watched]
+  );
 
   //doesnt return anything, but pass a function to run as a side effect
   //runs it after first mount
@@ -307,8 +327,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
   // );
   //should use derived state as this updates all the time
   const isTop = imdbRating > 8;
-  console.log(isTop);
-
+  //console.log(isTop);
   const [avgRating, setAvgRating] = useState(0);
 
   //cannot change the number or order of hooks returned
