@@ -330,6 +330,18 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     (movie) => movie.imdbID === selectedId
   )?.userRating;
 
+  //counter for number of times a user rates a movie
+  //maintains state across all re-renders, but not unloads
+  const countRef = useRef(0);
+  useEffect(
+    function () {
+      if (userRating)
+        //need to use current to get ref object data
+        countRef.current = countRef.current++;
+    },
+    [userRating]
+  ); //dependency whenever rating changes
+
   //destructure the object
   const {
     Title: title,
@@ -376,6 +388,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       imdbRating: Number(imdbRating),
       runtime: runtime.split(" ").at(0),
       userRating,
+      countRatingDecisions: countRef.current,
     };
     onAddWatched(newWatchedMovie);
     // setAvgRating(Number(imdbRating));
