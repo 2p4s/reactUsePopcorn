@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 import StarRating from "./StarRating";
 
 const average = (arr) =>
@@ -159,7 +160,8 @@ function NavBar({ children }) {
 function NumResults({ movies }) {
   return (
     <p className="num-results">
-      Found <strong>{movies ? movies.length - 1 : 0}</strong> results
+      {/* Found <strong>{movies ? movies.length - 1 : 0}</strong> results */}
+      Found <strong>{movies.length}</strong> results
     </p>
   );
 }
@@ -173,10 +175,28 @@ function Logo() {
 }
 
 function Search({ query, setQuery }) {
+  const inputEl = useRef(null);
+  //default the searchbox to the el we reference as a const and input itself
   useEffect(function () {
-    const el = document.querySelector(".search");
-    el.focus();
-  });
+    function callback(e) {
+      //if we have focus already, do nothing
+      if (document.activeElement === inputEl.current) return;
+      //focus and clear the box
+      if (e.code === "Enter") {
+        inputEl.current.focus();
+        setQuery(""); //clear text
+        console.log("Query set");
+      }
+    }
+    document.addEventListener("keydown", callback);
+    //cleanup  on unmount
+    return () => document.removeEventListener("keydown", callback);
+  }, []);
+
+  // useEffect(function () {
+  //   const el = document.querySelector(".search");
+  //   el.focus();
+  // });
 
   return (
     <input
@@ -185,6 +205,7 @@ function Search({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref={inputEl}
     />
   );
 }
@@ -439,7 +460,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
               </p>
             </div>
           </header>
-          <p>{avgRating}</p>
+          {/* <p>{avgRating}</p> */}
           <section>
             <div className="rating">
               {!isWatched ? (
