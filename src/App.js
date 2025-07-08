@@ -177,21 +177,24 @@ function Logo() {
 function Search({ query, setQuery }) {
   const inputEl = useRef(null);
   //default the searchbox to the el we reference as a const and input itself
-  useEffect(function () {
-    function callback(e) {
-      //if we have focus already, do nothing
-      if (document.activeElement === inputEl.current) return;
-      //focus and clear the box
-      if (e.code === "Enter") {
-        inputEl.current.focus();
-        setQuery(""); //clear text
-        console.log("Query set");
+  useEffect(
+    function () {
+      function callback(e) {
+        //if we have focus already, do nothing
+        if (document.activeElement === inputEl.current) return;
+        //focus and clear the box
+        if (e.code === "Enter") {
+          inputEl.current.focus();
+          setQuery(""); //clear text
+          console.log("Query set");
+        }
       }
-    }
-    document.addEventListener("keydown", callback);
-    //cleanup  on unmount
-    return () => document.removeEventListener("keydown", callback);
-  }, []);
+      document.addEventListener("keydown", callback);
+      //cleanup  on unmount
+      return () => document.removeEventListener("keydown", callback);
+    },
+    [setQuery]
+  );
 
   // useEffect(function () {
   //   const el = document.querySelector(".search");
