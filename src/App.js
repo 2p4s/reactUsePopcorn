@@ -3,6 +3,7 @@ import { useRef } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
 import { useLocalStorageState } from "./useLocalStorageState";
+import { useKey } from "./useKey";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -114,25 +115,31 @@ function Logo() {
 
 function Search({ query, setQuery }) {
   const inputEl = useRef(null);
-  //default the searchbox to the el we reference as a const and input itself
-  useEffect(
-    function () {
-      function callback(e) {
-        //if we have focus already, do nothing
-        if (document.activeElement === inputEl.current) return;
-        //focus and clear the box
-        if (e.code === "Enter") {
-          inputEl.current.focus();
-          setQuery(""); //clear text
-          console.log("Query set");
-        }
-      }
-      document.addEventListener("keydown", callback);
-      //cleanup  on unmount
-      return () => document.removeEventListener("keydown", callback);
-    },
-    [setQuery]
-  );
+  useKey("Enter", function () {
+    if (document.activeElement === inputEl.current) return;
+    inputEl.current.focus();
+    setQuery(""); //clear text
+  });
+
+  // //default the searchbox to the el we reference as a const and input itself
+  // useEffect(
+  //   function () {
+  //     function callback(e) {
+  //       //if we have focus already, do nothing
+  //       if (document.activeElement === inputEl.current) return;
+  //       //focus and clear the box
+  //       if (e.code === "Enter") {
+  //         inputEl.current.focus();
+  //         setQuery(""); //clear text
+  //         console.log("Query set");
+  //       }
+  //     }
+  //     document.addEventListener("keydown", callback);
+  //     //cleanup  on unmount
+  //     return () => document.removeEventListener("keydown", callback);
+  //   },
+  //   [setQuery]
+  // );
 
   // useEffect(function () {
   //   const el = document.querySelector(".search");
@@ -336,27 +343,29 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     onCloseMovie();
   }
 
-  //only listen on this component
-  useEffect(
-    function () {
-      //define the add as a function as we need to remove THIS SPECIFIC instance
-      //when the component is unloaded
-      function callback(e) {
-        if (e.code === "Escape") {
-          onCloseMovie();
-          //console.log("Closing");
-        }
-      }
-      //add this function instance
-      document.addEventListener("keydown", callback);
+  useKey("Escape", onCloseMovie);
 
-      //define the cleanup
-      return function () {
-        document.removeEventListener("keydown", callback);
-      };
-    },
-    [onCloseMovie] //reference the function as a dependency
-  );
+  // //only listen on this component
+  // useEffect(
+  //   function () {
+  //     //define the add as a function as we need to remove THIS SPECIFIC instance
+  //     //when the component is unloaded
+  //     function callback(e) {
+  //       if (e.code === "Escape") {
+  //         onCloseMovie();
+  //         //console.log("Closing");
+  //       }
+  //     }
+  //     //add this function instance
+  //     document.addEventListener("keydown", callback);
+
+  //     //define the cleanup
+  //     return function () {
+  //       document.removeEventListener("keydown", callback);
+  //     };
+  //   },
+  //   [onCloseMovie] //reference the function as a dependency
+  // );
 
   //load the data
   useEffect(
