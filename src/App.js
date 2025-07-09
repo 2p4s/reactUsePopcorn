@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRef } from "react";
 import StarRating from "./StarRating";
+import { useMovies } from "./useMovies";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -10,9 +11,9 @@ const KEY = "7142b64b";
 
 export default function App() {
   const [query, setQuery] = useState("");
-  const [movies, setMovies] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
+
   const [selectedId, setSelectedId] = useState(null);
   //pass in a callback function to init state of func call, but cannot pass args
   //only used on init run
@@ -54,55 +55,6 @@ export default function App() {
     },
     [watched]
   );
-
-  //doesnt return anything, but pass a function to run as a side effect
-  //runs it after first mount
-  useEffect(
-    function () {
-      const controller = new AbortController(); //browser control API for cancelling requests
-
-      async function fetchMovies() {
-        try {
-          setIsLoading(true);
-          //clear any errors
-          setError("");
-          const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-            { signal: controller.signal } //pass as param
-          );
-
-          //check for error
-          if (!res.ok) throw new Error("Unable to get movies");
-
-          const data = await res.json();
-          if (data.Response === "False") throw new Error("Movie not found");
-
-          setMovies(data.Search);
-          // console.log(data.Search);
-          setError(""); //clears the aborted fetch requests
-        } catch (err) {
-          console.error(err.message);
-          setError(err.message);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-      if (query.length < 3) {
-        setMovies([]);
-        setError("");
-        return; //clear the array and do nothing
-      }
-      //close any old movie open
-      handleCloseMovie();
-      //now get movies
-      fetchMovies();
-      //Cleanup function, runs when component is unloaded / removed, prevent multiple runs of this func
-      return function () {
-        controller.abort();
-      };
-    },
-    [query]
-  ); //empty array means run "onMount" ie. first run, but setting to query, it will refresh on each change of that state
 
   return (
     <>
