@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRef } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
+import { useLocalStorageState } from "./useLocalStorageState";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -15,14 +16,8 @@ export default function App() {
   const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
 
   const [selectedId, setSelectedId] = useState(null);
-  //pass in a callback function to init state of func call, but cannot pass args
-  //only used on init run
-  const [watched, setWatched] = useState(function () {
-    const storedValue = JSON.parse(localStorage.getItem("watched")) || [];
-    //localstorage is a string, so JSON it
-    return storedValue;
-  });
-  //const [watched, setWatched] = useState([]);
+
+  const [watched, setWatched] = useLocalStorageState([], "watched");
 
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
@@ -46,15 +41,6 @@ export default function App() {
     //get the movie array and filter the one to delete
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
-
-  //use an effect so we can update the dependency to the watched state
-  //pass in watched as the async process should already have handled data
-  useEffect(
-    function () {
-      localStorage.setItem("watched", JSON.stringify(watched));
-    },
-    [watched]
-  );
 
   return (
     <>
