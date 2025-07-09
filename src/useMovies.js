@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 const KEY = "7142b64b";
 
 //custom hook, so not using export custom. not mandatory
-export function useMovies(query, callback) {
+export function useMovies(query) {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -14,7 +14,7 @@ export function useMovies(query, callback) {
   useEffect(
     function () {
       //call it only if it exists
-      callback?.();
+      //callback?.();
       const controller = new AbortController(); //browser control API for cancelling requests
 
       async function fetchMovies() {
